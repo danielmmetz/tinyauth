@@ -147,7 +147,7 @@ func (app *BootstrapApp) Setup() error {
 	var ipBypassService *service.IPBypassService
 	if app.config.EnableDynamicIPBypass {
 		log.Debug().Msg("Dynamic IP bypass enabled")
-		ipBypassService = service.NewIPBypassService(database)
+		ipBypassService = service.NewIPBypassService(database, dockerService)
 	}
 
 	// Initialize services (order matters)
@@ -269,6 +269,12 @@ func (app *BootstrapApp) Setup() error {
 
 	healthController := controller.NewHealthController(apiRouter)
 
+	// Create bypass controller if enabled
+	var bypassController *controller.BypassController
+	if app.config.EnableDynamicIPBypass && ipBypassService != nil {
+		bypassController = controller.NewBypassController(apiRouter, ipBypassService)
+	}
+
 	// Setup routes
 	controller := []Controller{
 		contextController,
@@ -277,6 +283,7 @@ func (app *BootstrapApp) Setup() error {
 		userController,
 		healthController,
 		resourcesController,
+		bypassController,
 	}
 
 	for _, ctrl := range controller {

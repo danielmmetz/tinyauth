@@ -6,6 +6,7 @@ type IPBypass struct {
 	Domain    string `gorm:"column:domain"`
 	ExpiresAt int64  `gorm:"column:expires_at"`
 	Note      string `gorm:"column:note"`
+	CreatedBy string `gorm:"column:created_by"`
 	CreatedAt int64  `gorm:"column:created_at"`
 }
 

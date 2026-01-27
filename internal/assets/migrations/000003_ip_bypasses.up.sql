@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS "ip_bypasses" (
     "domain" TEXT NOT NULL,
     "expires_at" INTEGER NOT NULL,
     "note" TEXT,
+    "created_by" TEXT NOT NULL,
     "created_at" INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX idx_ip_bypasses_cidr_domain ON ip_bypasses(cidr, domain);

@@ -103,3 +103,43 @@ func (docker *DockerService) GetLabels(appDomain string) (config.App, error) {
 	log.Debug().Msg("No matching container found, returning empty labels")
 	return config.App{}, nil
 }
+
+func (docker *DockerService) GetDomains() ([]string, error) {
+	domains := []string{"*"} // Always include wildcard
+
+	if !docker.isConnected {
+		return domains, nil
+	}
+
+	containers, err := docker.getContainers()
+	if err != nil {
+		log.Warn().Err(err).Msg("Failed to get Docker containers for domain enumeration")
+		return domains, nil
+	}
+
+	seenDomains := map[string]bool{"*": true}
+
+	for _, ctr := range containers {
+		inspect, err := docker.inspectContainer(ctr.ID)
+		if err != nil {
+			log.Debug().Err(err).Str("container_id", ctr.ID).Msg("Failed to inspect container")
+			continue
+		}
+
+		labels, err := decoders.DecodeLabels(inspect.Config.Labels)
+		if err != nil {
+			log.Debug().Err(err).Str("container_id", ctr.ID).Msg("Failed to decode container labels")
+			continue
+		}
+
+		for _, appLabels := range labels.Apps {
+			domain := appLabels.Config.Domain
+			if domain != "" && !seenDomains[domain] {
+				domains = append(domains, domain)
+				seenDomains[domain] = true
+			}
+		}
+	}
+
+	return domains, nil
+}

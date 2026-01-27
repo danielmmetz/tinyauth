@@ -49,10 +49,11 @@ type Config struct {
 // OAuth/OIDC config
 
 type Claims struct {
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	PreferredUsername string `json:"preferred_username"`
-	Groups            any    `json:"groups"`
+	Name                 string `json:"name"`
+	Email                string `json:"email"`
+	PreferredUsername    string `json:"preferred_username"`
+	Groups               any    `json:"groups"`
+	BypassDomainsAllowed string `json:"bypass_domains_allowed"`
 }
 
 type OAuthServiceConfig struct {
@@ -87,27 +88,29 @@ type UserSearch struct {
 }
 
 type SessionCookie struct {
-	UUID        string
-	Username    string
-	Name        string
-	Email       string
-	Provider    string
-	TotpPending bool
-	OAuthGroups string
-	OAuthName   string
+	UUID                  string
+	Username              string
+	Name                  string
+	Email                 string
+	Provider              string
+	TotpPending           bool
+	OAuthGroups           string
+	OAuthName             string
+	BypassDomainsAllowed  string
 }
 
 type UserContext struct {
-	Username    string
-	Name        string
-	Email       string
-	IsLoggedIn  bool
-	OAuth       bool
-	Provider    string
-	TotpPending bool
-	OAuthGroups string
-	TotpEnabled bool
-	OAuthName   string
+	Username              string
+	Name                  string
+	Email                 string
+	IsLoggedIn            bool
+	OAuth                 bool
+	Provider              string
+	TotpPending           bool
+	OAuthGroups           string
+	TotpEnabled           bool
+	OAuthName             string
+	BypassDomainsAllowed  string
 }
 
 // API responses and queries

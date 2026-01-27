@@ -190,12 +190,13 @@ func (controller *OAuthController) oauthCallbackHandler(c *gin.Context) {
 	}
 
 	sessionCookie := config.SessionCookie{
-		Username:    username,
-		Name:        name,
-		Email:       user.Email,
-		Provider:    req.Provider,
-		OAuthGroups: utils.CoalesceToString(user.Groups),
-		OAuthName:   service.GetName(),
+		Username:             username,
+		Name:                 name,
+		Email:                user.Email,
+		Provider:             req.Provider,
+		OAuthGroups:          utils.CoalesceToString(user.Groups),
+		OAuthName:            service.GetName(),
+		BypassDomainsAllowed: user.BypassDomainsAllowed,
 	}
 
 	log.Trace().Interface("session_cookie", sessionCookie).Msg("Creating session cookie")

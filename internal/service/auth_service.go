@@ -206,15 +206,16 @@ func (auth *AuthService) CreateSessionCookie(c *gin.Context, data *config.Sessio
 	}
 
 	session := model.Session{
-		UUID:        uuid.String(),
-		Username:    data.Username,
-		Email:       data.Email,
-		Name:        data.Name,
-		Provider:    data.Provider,
-		TOTPPending: data.TotpPending,
-		OAuthGroups: data.OAuthGroups,
-		Expiry:      time.Now().Add(time.Duration(expiry) * time.Second).Unix(),
-		OAuthName:   data.OAuthName,
+		UUID:                 uuid.String(),
+		Username:             data.Username,
+		Email:                data.Email,
+		Name:                 data.Name,
+		Provider:             data.Provider,
+		TOTPPending:          data.TotpPending,
+		OAuthGroups:          data.OAuthGroups,
+		Expiry:               time.Now().Add(time.Duration(expiry) * time.Second).Unix(),
+		OAuthName:            data.OAuthName,
+		BypassDomainsAllowed: data.BypassDomainsAllowed,
 	}
 
 	err = gorm.G[model.Session](auth.database).Create(auth.ctx, &session)
@@ -274,14 +275,15 @@ func (auth *AuthService) GetSessionCookie(c *gin.Context) (config.SessionCookie,
 	}
 
 	return config.SessionCookie{
-		UUID:        session.UUID,
-		Username:    session.Username,
-		Email:       session.Email,
-		Name:        session.Name,
-		Provider:    session.Provider,
-		TotpPending: session.TOTPPending,
-		OAuthGroups: session.OAuthGroups,
-		OAuthName:   session.OAuthName,
+		UUID:                 session.UUID,
+		Username:             session.Username,
+		Email:                session.Email,
+		Name:                 session.Name,
+		Provider:             session.Provider,
+		TotpPending:          session.TOTPPending,
+		OAuthGroups:          session.OAuthGroups,
+		OAuthName:            session.OAuthName,
+		BypassDomainsAllowed: session.BypassDomainsAllowed,
 	}, nil
 }
 
