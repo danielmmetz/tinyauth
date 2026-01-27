@@ -143,6 +143,13 @@ func (app *BootstrapApp) Setup() error {
 	authService := service.NewAuthService(authConfig, dockerService, ldapService, database)
 	oauthBrokerService := service.NewOAuthBrokerService(oauthProviders)
 
+	// Create IP bypass service if enabled
+	var ipBypassService *service.IPBypassService
+	if app.config.EnableDynamicIPBypass {
+		log.Debug().Msg("Dynamic IP bypass enabled")
+		ipBypassService = service.NewIPBypassService(database)
+	}
+
 	// Initialize services (order matters)
 	services := []Service{
 		dockerService,
@@ -249,7 +256,7 @@ func (app *BootstrapApp) Setup() error {
 
 	proxyController := controller.NewProxyController(controller.ProxyControllerConfig{
 		AppURL: app.config.AppURL,
-	}, apiRouter, aclsService, authService)
+	}, apiRouter, aclsService, authService, ipBypassService)
 
 	userController := controller.NewUserController(controller.UserControllerConfig{
 		CookieDomain: cookieDomain,
@@ -285,7 +292,7 @@ func (app *BootstrapApp) Setup() error {
 
 	// Start DB cleanup routine
 	log.Debug().Msg("Starting database cleanup routine")
-	go app.dbCleanup(database)
+	go app.dbCleanup(database, ipBypassService)
 
 	// If we have an socket path, bind to it
 	if app.config.SocketPath != "" {
@@ -369,7 +376,7 @@ func (app *BootstrapApp) heartbeat() {
 	}
 }
 
-func (app *BootstrapApp) dbCleanup(db *gorm.DB) {
+func (app *BootstrapApp) dbCleanup(db *gorm.DB, ipBypassService *service.IPBypassService) {
 	ticker := time.NewTicker(time.Duration(30) * time.Minute)
 	defer ticker.Stop()
 	ctx := context.Background()
@@ -379,6 +386,11 @@ func (app *BootstrapApp) dbCleanup(db *gorm.DB) {
 		_, err := gorm.G[model.Session](db).Where("expiry < ?", time.Now().Unix()).Delete(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to cleanup old sessions")
+		}
+
+		log.Debug().Msg("Cleaning up expired IP bypasses")
+		if err := ipBypassService.Cleanup(ctx); err != nil {
+			log.Error().Err(err).Msg("Failed to cleanup expired IP bypasses")
 		}
 	}
 }

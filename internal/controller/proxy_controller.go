@@ -22,18 +22,20 @@ type ProxyControllerConfig struct {
 }
 
 type ProxyController struct {
-	config ProxyControllerConfig
-	router *gin.RouterGroup
-	acls   *service.AccessControlsService
-	auth   *service.AuthService
+	config   ProxyControllerConfig
+	router   *gin.RouterGroup
+	acls     *service.AccessControlsService
+	auth     *service.AuthService
+	ipBypass *service.IPBypassService
 }
 
-func NewProxyController(config ProxyControllerConfig, router *gin.RouterGroup, acls *service.AccessControlsService, auth *service.AuthService) *ProxyController {
+func NewProxyController(config ProxyControllerConfig, router *gin.RouterGroup, acls *service.AccessControlsService, auth *service.AuthService, ipBypass *service.IPBypassService) *ProxyController {
 	return &ProxyController{
-		config: config,
-		router: router,
-		acls:   acls,
-		auth:   auth,
+		config:   config,
+		router:   router,
+		acls:     acls,
+		auth:     auth,
+		ipBypass: ipBypass,
 	}
 }
 
@@ -88,6 +90,16 @@ func (controller *ProxyController) proxyHandler(c *gin.Context) {
 	log.Trace().Interface("acls", acls).Msg("ACLs for resource")
 
 	clientIP := c.ClientIP()
+
+	// Check dynamic IP bypass first
+	if controller.ipBypass.IsBypassed(c.Request.Context(), host, clientIP) {
+		controller.setHeaders(c, acls)
+		c.JSON(200, gin.H{
+			"status":  200,
+			"message": "Authenticated",
+		})
+		return
+	}
 
 	if controller.auth.IsBypassedIP(acls.IP, clientIP) {
 		controller.setHeaders(c, acls)

@@ -43,6 +43,7 @@ type Config struct {
 	DisableResources      bool   `mapstructure:"disable-resources"`
 	DisableUIWarnings     bool   `mapstructure:"disable-ui-warnings"`
 	SocketPath            string `mapstructure:"socket-path"`
+	EnableDynamicIPBypass bool   `mapstructure:"enable-dynamic-ip-bypass"`
 }
 
 // OAuth/OIDC config

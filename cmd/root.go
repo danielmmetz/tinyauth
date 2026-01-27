@@ -72,6 +72,7 @@ func (c *rootCmd) Register() {
 		{"disable-resources", false, "Disable the resources server."},
 		{"socket-path", "", "Path to the Unix socket to bind the server to."},
 		{"disable-ui-warnings", false, "Disable UI warnings about insecure configurations."},
+		{"enable-dynamic-ip-bypass", false, "Enable dynamic IP bypass from database."},
 	}
 
 	for _, opt := range configOptions {

@@ -64,7 +64,7 @@ func setupProxyController(t *testing.T, middlewares *[]gin.HandlerFunc) (*gin.En
 	// Controller
 	ctrl := controller.NewProxyController(controller.ProxyControllerConfig{
 		AppURL: "http://localhost:8080",
-	}, group, accessControlsService, authService)
+	}, group, accessControlsService, authService, nil)
 	ctrl.SetupRoutes()
 
 	return router, recorder, authService
