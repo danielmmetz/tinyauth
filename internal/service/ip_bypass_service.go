@@ -106,7 +106,7 @@ func (s *IPBypassService) Create(ctx context.Context, bypass *model.IPBypass) er
 	}
 
 	// Validate CIDR/IP format
-	cidrToValidate := strings.Replace(bypass.CIDR, "-", "/", -1)
+	cidrToValidate := strings.ReplaceAll(bypass.CIDR, "-", "/")
 	if strings.Contains(cidrToValidate, "/") {
 		_, _, err := net.ParseCIDR(cidrToValidate)
 		if err != nil {

@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"maps"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 	"tinyauth/internal/config"
@@ -133,26 +135,19 @@ func (c *BypassController) validateNonAdminCIDR(clientIP, requestedCIDR string) 
 // getAllowedDomainsForUser returns the list of domains a user is allowed to create bypasses for.
 // Admins can access all domains. Non-admins are restricted to their BypassDomainsAllowed list.
 func (c *BypassController) getAllowedDomainsForUser(userContext config.UserContext, allDomains []string, isAdmin bool) []string {
-	if isAdmin {
-		return allDomains
-	}
-
-	allowed := make(map[string]bool)
-	for _, domain := range strings.Split(userContext.BypassDomainsAllowed, ",") {
+	allowedForUser := make(map[string]bool)
+	for domain := range strings.SplitSeq(userContext.BypassDomainsAllowed, ",") {
 		trimmed := strings.TrimSpace(domain)
 		if trimmed != "" {
-			allowed[trimmed] = true
+			allowedForUser[trimmed] = true
 		}
 	}
-
-	var result []string
-	for _, domain := range allDomains {
-		if allowed[domain] {
-			result = append(result, domain)
+	if isAdmin {
+		for _, domain := range allDomains {
+			allowedForUser[domain] = true
 		}
 	}
-
-	return result
+	return slices.Sorted(maps.Keys(allowedForUser))
 }
 
 // isDomainAllowedForUser checks if a user is allowed to create a bypass for a specific domain.
@@ -161,7 +156,7 @@ func (c *BypassController) isDomainAllowedForUser(userContext config.UserContext
 		return true
 	}
 
-	for _, allowed := range strings.Split(userContext.BypassDomainsAllowed, ",") {
+	for allowed := range strings.SplitSeq(userContext.BypassDomainsAllowed, ",") {
 		if strings.TrimSpace(allowed) == domain {
 			return true
 		}
