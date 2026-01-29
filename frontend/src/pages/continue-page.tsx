@@ -26,10 +26,16 @@ export const ContinuePage = () => {
   const searchParams = new URLSearchParams(search);
   const redirectUri = searchParams.get("redirect_uri");
 
+  // Normalize relative paths to absolute URLs for consistent validation
+  const absoluteRedirectUri =
+    redirectUri && redirectUri.startsWith("/")
+      ? new URL(redirectUri, window.location.origin).toString()
+      : redirectUri;
+
   const isValidRedirectUri =
-    redirectUri !== null ? isValidUrl(redirectUri) : false;
+    absoluteRedirectUri !== null ? isValidUrl(absoluteRedirectUri) : false;
   const redirectUriObj = isValidRedirectUri
-    ? new URL(redirectUri as string)
+    ? new URL(absoluteRedirectUri as string)
     : null;
   const isTrustedRedirectUri =
     redirectUriObj !== null
@@ -49,7 +55,12 @@ export const ContinuePage = () => {
 
   const handleRedirect = () => {
     setLoading(true);
-    window.location.assign(redirectUriObj!.toString());
+    // Use React Router for same-origin redirects (more efficient)
+    if (redirectUriObj!.origin === window.location.origin) {
+      navigate(redirectUriObj!.pathname + redirectUriObj!.search + redirectUriObj!.hash);
+    } else {
+      window.location.assign(redirectUriObj!.toString());
+    }
   };
 
   useEffect(() => {

@@ -98,6 +98,11 @@ func IsRedirectSafe(redirectURL string, domain string) bool {
 
 	hostname := parsed.Hostname()
 
+	// Relative paths (e.g., /bypasses) are safe since they can't redirect externally
+	if hostname == "" && strings.HasPrefix(redirectURL, "/") {
+		return true
+	}
+
 	if strings.HasSuffix(hostname, domain) {
 		return true
 	}
