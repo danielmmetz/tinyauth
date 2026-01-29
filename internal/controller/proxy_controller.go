@@ -93,6 +93,15 @@ func (controller *ProxyController) proxyHandler(c *gin.Context) {
 
 	// Check dynamic IP bypass first
 	if controller.ipBypass.IsBypassed(c.Request.Context(), host, clientIP) {
+		// If request is authenticated, propagate user information
+		context, err := utils.GetContext(c)
+		if err == nil {
+			c.Header("Remote-User", utils.SanitizeHeader(context.Username))
+			c.Header("Remote-Name", utils.SanitizeHeader(context.Name))
+			c.Header("Remote-Email", utils.SanitizeHeader(context.Email))
+			c.Header("Remote-Groups", utils.SanitizeHeader(context.OAuthGroups))
+		}
+
 		controller.setHeaders(c, acls)
 		c.JSON(200, gin.H{
 			"status":  200,
@@ -102,6 +111,15 @@ func (controller *ProxyController) proxyHandler(c *gin.Context) {
 	}
 
 	if controller.auth.IsBypassedIP(acls.IP, clientIP) {
+		// If request is authenticated, propagate user information
+		context, err := utils.GetContext(c)
+		if err == nil {
+			c.Header("Remote-User", utils.SanitizeHeader(context.Username))
+			c.Header("Remote-Name", utils.SanitizeHeader(context.Name))
+			c.Header("Remote-Email", utils.SanitizeHeader(context.Email))
+			c.Header("Remote-Groups", utils.SanitizeHeader(context.OAuthGroups))
+		}
+
 		controller.setHeaders(c, acls)
 		c.JSON(200, gin.H{
 			"status":  200,
