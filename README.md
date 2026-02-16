@@ -14,6 +14,14 @@
 
 <br />
 
+> [!NOTE]
+> **Fork additions:**
+> - **Dynamic IP Bypasses** — Authenticated users can create temporary, time-limited bypasses that let specific IPs skip the login screen. Useful for securing apps accessed by clients that can't handle an OAuth proxy (e.g. IoT devices, API consumers, embedded clients).
+> - Bypasses are scoped by domain (or `*` for all) with configurable durations (1 hour to 1 month) and automatic expiration cleanup.
+> - Admin/non-admin model: admins (via `tinyauth-admin` OAuth group) can create bypasses for arbitrary CIDRs and any domain; regular users are limited to their own IP and a configurable allow-list of domains.
+> - Dedicated `/bypasses` management page and REST API (`/api/bypasses`) for creating, listing, and deleting bypasses.
+> - See [docs/dynamic-ip-bypasses.md](docs/dynamic-ip-bypasses.md) for details.
+
 Tinyauth is a simple authentication middleware that adds a simple login screen or OAuth with Google, Github or any other provider to all of your apps. It supports all the popular proxies like Traefik, Nginx and Caddy.
 
 ![Screenshot](assets/screenshot.png)
