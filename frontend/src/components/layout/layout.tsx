@@ -1,16 +1,25 @@
 import { useAppContext } from "@/context/app-context";
 import { LanguageSelector } from "../language/language";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { useCallback, useEffect, useState } from "react";
 import { DomainWarning } from "../domain-warning/domain-warning";
 import { ThemeToggle } from "../theme-toggle/theme-toggle";
 
+// Routes that need a wider container than the standard login-form width.
+const WIDE_ROUTES = ["/bypasses"];
+
 const BaseLayout = ({ children }: { children: React.ReactNode }) => {
   const { backgroundImage, title } = useAppContext();
+  const { pathname } = useLocation();
 
   useEffect(() => {
     document.title = title;
   }, [title]);
+
+  const isWideRoute = WIDE_ROUTES.some((route) => pathname.startsWith(route));
+  const containerClass = isWideRoute
+    ? "w-full max-w-6xl my-8"
+    : "max-w-sm md:min-w-sm min-w-xs";
 
   return (
     <div
@@ -25,7 +34,7 @@ const BaseLayout = ({ children }: { children: React.ReactNode }) => {
         <ThemeToggle />
         <LanguageSelector />
       </div>
-      <div className="max-w-sm md:min-w-sm min-w-xs">{children}</div>
+      <div className={containerClass}>{children}</div>
     </div>
   );
 };
