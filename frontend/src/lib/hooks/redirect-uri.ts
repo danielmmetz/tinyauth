@@ -26,8 +26,14 @@ export const useRedirectUri = (
 
   let url: URL;
 
+  // Support relative paths (e.g. "/bypasses") by resolving them against the
+  // current origin. They cannot redirect off-origin so they're trusted.
+  const isRelativePath = redirect_uri.startsWith("/");
+
   try {
-    url = new URL(redirect_uri);
+    url = isRelativePath
+      ? new URL(redirect_uri, window.location.origin)
+      : new URL(redirect_uri);
   } catch {
     return {
       valid: isValid,
@@ -40,6 +46,7 @@ export const useRedirectUri = (
   isValid = true;
 
   if (
+    isRelativePath ||
     url.hostname == cookieDomain ||
     url.hostname.endsWith(`.${cookieDomain}`)
   ) {

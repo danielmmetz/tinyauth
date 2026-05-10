@@ -4,6 +4,16 @@
 
 package repository
 
+type IpBypass struct {
+	ID        int64
+	Cidr      string
+	Domain    string
+	ExpiresAt int64
+	Note      string
+	CreatedBy string
+	CreatedAt int64
+}
+
 type OidcCode struct {
 	Sub           string
 	CodeHash      string
@@ -37,15 +47,16 @@ type OidcUserinfo struct {
 }
 
 type Session struct {
-	UUID        string
-	Username    string
-	Email       string
-	Name        string
-	Provider    string
-	TotpPending bool
-	OAuthGroups string
-	Expiry      int64
-	CreatedAt   int64
-	OAuthName   string
-	OAuthSub    string
+	UUID                 string
+	Username             string
+	Email                string
+	Name                 string
+	Provider             string
+	TotpPending          bool
+	OAuthGroups          string
+	Expiry               int64
+	CreatedAt            int64
+	OAuthName            string
+	OAuthSub             string
+	BypassDomainsAllowed string
 }

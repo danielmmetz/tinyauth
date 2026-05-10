@@ -308,17 +308,18 @@ func (auth *AuthService) CreateSessionCookie(c *gin.Context, data *repository.Se
 	}
 
 	session := repository.CreateSessionParams{
-		UUID:        uuid.String(),
-		Username:    data.Username,
-		Email:       data.Email,
-		Name:        data.Name,
-		Provider:    data.Provider,
-		TotpPending: data.TotpPending,
-		OAuthGroups: data.OAuthGroups,
-		Expiry:      time.Now().Add(time.Duration(expiry) * time.Second).Unix(),
-		CreatedAt:   time.Now().Unix(),
-		OAuthName:   data.OAuthName,
-		OAuthSub:    data.OAuthSub,
+		UUID:                 uuid.String(),
+		Username:             data.Username,
+		Email:                data.Email,
+		Name:                 data.Name,
+		Provider:             data.Provider,
+		TotpPending:          data.TotpPending,
+		OAuthGroups:          data.OAuthGroups,
+		Expiry:               time.Now().Add(time.Duration(expiry) * time.Second).Unix(),
+		CreatedAt:            time.Now().Unix(),
+		OAuthName:            data.OAuthName,
+		OAuthSub:             data.OAuthSub,
+		BypassDomainsAllowed: data.BypassDomainsAllowed,
 	}
 
 	_, err = auth.queries.CreateSession(c, session)
@@ -362,16 +363,17 @@ func (auth *AuthService) RefreshSessionCookie(c *gin.Context) error {
 	newExpiry := session.Expiry + refreshThreshold
 
 	_, err = auth.queries.UpdateSession(c, repository.UpdateSessionParams{
-		Username:    session.Username,
-		Email:       session.Email,
-		Name:        session.Name,
-		Provider:    session.Provider,
-		TotpPending: session.TotpPending,
-		OAuthGroups: session.OAuthGroups,
-		Expiry:      newExpiry,
-		OAuthName:   session.OAuthName,
-		OAuthSub:    session.OAuthSub,
-		UUID:        session.UUID,
+		Username:             session.Username,
+		Email:                session.Email,
+		Name:                 session.Name,
+		Provider:             session.Provider,
+		TotpPending:          session.TotpPending,
+		OAuthGroups:          session.OAuthGroups,
+		Expiry:               newExpiry,
+		OAuthName:            session.OAuthName,
+		OAuthSub:             session.OAuthSub,
+		BypassDomainsAllowed: session.BypassDomainsAllowed,
+		UUID:                 session.UUID,
 	})
 
 	if err != nil {
@@ -439,15 +441,16 @@ func (auth *AuthService) GetSessionCookie(c *gin.Context) (repository.Session, e
 	}
 
 	return repository.Session{
-		UUID:        session.UUID,
-		Username:    session.Username,
-		Email:       session.Email,
-		Name:        session.Name,
-		Provider:    session.Provider,
-		TotpPending: session.TotpPending,
-		OAuthGroups: session.OAuthGroups,
-		OAuthName:   session.OAuthName,
-		OAuthSub:    session.OAuthSub,
+		UUID:                 session.UUID,
+		Username:             session.Username,
+		Email:                session.Email,
+		Name:                 session.Name,
+		Provider:             session.Provider,
+		TotpPending:          session.TotpPending,
+		OAuthGroups:          session.OAuthGroups,
+		OAuthName:            session.OAuthName,
+		OAuthSub:             session.OAuthSub,
+		BypassDomainsAllowed: session.BypassDomainsAllowed,
 	}, nil
 }
 

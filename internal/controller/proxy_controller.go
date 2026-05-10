@@ -55,18 +55,20 @@ type ProxyControllerConfig struct {
 }
 
 type ProxyController struct {
-	config ProxyControllerConfig
-	router *gin.RouterGroup
-	acls   *service.AccessControlsService
-	auth   *service.AuthService
+	config   ProxyControllerConfig
+	router   *gin.RouterGroup
+	acls     *service.AccessControlsService
+	auth     *service.AuthService
+	ipBypass *service.IPBypassService
 }
 
-func NewProxyController(config ProxyControllerConfig, router *gin.RouterGroup, acls *service.AccessControlsService, auth *service.AuthService) *ProxyController {
+func NewProxyController(config ProxyControllerConfig, router *gin.RouterGroup, acls *service.AccessControlsService, auth *service.AuthService, ipBypass *service.IPBypassService) *ProxyController {
 	return &ProxyController{
-		config: config,
-		router: router,
-		acls:   acls,
-		auth:   auth,
+		config:   config,
+		router:   router,
+		acls:     acls,
+		auth:     auth,
+		ipBypass: ipBypass,
 	}
 }
 
@@ -103,7 +105,19 @@ func (controller *ProxyController) proxyHandler(c *gin.Context) {
 
 	clientIP := c.ClientIP()
 
+	// Check dynamic IP bypass first (database-backed entries)
+	if controller.ipBypass.IsBypassed(c.Request.Context(), proxyCtx.Host, clientIP) {
+		controller.propagateUserHeadersIfPresent(c)
+		controller.setHeaders(c, acls)
+		c.JSON(200, gin.H{
+			"status":  200,
+			"message": "Authenticated",
+		})
+		return
+	}
+
 	if controller.auth.IsBypassedIP(acls.IP, clientIP) {
+		controller.propagateUserHeadersIfPresent(c)
 		controller.setHeaders(c, acls)
 		c.JSON(200, gin.H{
 			"status":  200,
@@ -315,6 +329,27 @@ func (controller *ProxyController) setHeaders(c *gin.Context, acls config.App) {
 		tlog.App.Debug().Str("username", acls.Response.BasicAuth.Username).Msg("Setting basic auth header")
 		c.Header("Authorization", fmt.Sprintf("Basic %s", utils.GetBasicAuth(acls.Response.BasicAuth.Username, basicPassword)))
 	}
+}
+
+// propagateUserHeadersIfPresent forwards Remote-* headers when the request is
+// already authenticated, so apps reached via an IP bypass still see the user.
+func (controller *ProxyController) propagateUserHeadersIfPresent(c *gin.Context) {
+	userContext, err := utils.GetContext(c)
+	if err != nil || !userContext.IsLoggedIn {
+		return
+	}
+
+	c.Header("Remote-User", utils.SanitizeHeader(userContext.Username))
+	c.Header("Remote-Name", utils.SanitizeHeader(userContext.Name))
+	c.Header("Remote-Email", utils.SanitizeHeader(userContext.Email))
+
+	if userContext.Provider == "ldap" {
+		c.Header("Remote-Groups", utils.SanitizeHeader(userContext.LdapGroups))
+	} else if userContext.Provider != "local" {
+		c.Header("Remote-Groups", utils.SanitizeHeader(userContext.OAuthGroups))
+	}
+
+	c.Header("Remote-Sub", utils.SanitizeHeader(userContext.OAuthSub))
 }
 
 func (controller *ProxyController) handleError(c *gin.Context, proxyCtx ProxyContext) {

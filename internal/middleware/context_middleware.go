@@ -140,15 +140,16 @@ func (m *ContextMiddleware) Middleware() gin.HandlerFunc {
 
 			m.auth.RefreshSessionCookie(c)
 			c.Set("context", &config.UserContext{
-				Username:    cookie.Username,
-				Name:        cookie.Name,
-				Email:       cookie.Email,
-				Provider:    cookie.Provider,
-				OAuthGroups: cookie.OAuthGroups,
-				OAuthName:   cookie.OAuthName,
-				OAuthSub:    cookie.OAuthSub,
-				IsLoggedIn:  true,
-				OAuth:       true,
+				Username:             cookie.Username,
+				Name:                 cookie.Name,
+				Email:                cookie.Email,
+				Provider:             cookie.Provider,
+				OAuthGroups:          cookie.OAuthGroups,
+				OAuthName:            cookie.OAuthName,
+				OAuthSub:             cookie.OAuthSub,
+				BypassDomainsAllowed: cookie.BypassDomainsAllowed,
+				IsLoggedIn:           true,
+				OAuth:                true,
 			})
 			c.Next()
 			return

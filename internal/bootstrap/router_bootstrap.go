@@ -93,9 +93,14 @@ func (app *BootstrapApp) setupRouter() (*gin.Engine, error) {
 
 	proxyController := controller.NewProxyController(controller.ProxyControllerConfig{
 		AppURL: app.config.AppURL,
-	}, apiRouter, app.services.accessControlService, app.services.authService)
+	}, apiRouter, app.services.accessControlService, app.services.authService, app.services.ipBypassService)
 
 	proxyController.SetupRoutes()
+
+	if app.services.ipBypassService != nil {
+		bypassController := controller.NewBypassController(apiRouter, app.services.ipBypassService)
+		bypassController.SetupRoutes()
+	}
 
 	userController := controller.NewUserController(controller.UserControllerConfig{
 		CookieDomain: app.context.cookieDomain,

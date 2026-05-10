@@ -13,6 +13,7 @@ type Services struct {
 	ldapService          *service.LdapService
 	oauthBrokerService   *service.OAuthBrokerService
 	oidcService          *service.OIDCService
+	ipBypassService      *service.IPBypassService
 }
 
 func (app *BootstrapApp) initServices(queries *repository.Queries) (Services, error) {
@@ -105,6 +106,11 @@ func (app *BootstrapApp) initServices(queries *repository.Queries) (Services, er
 	}
 
 	services.oidcService = oidcService
+
+	if app.config.IPBypass.Enabled {
+		tlog.App.Debug().Msg("Dynamic IP bypass enabled")
+		services.ipBypassService = service.NewIPBypassService(queries, dockerService)
+	}
 
 	return services, nil
 }

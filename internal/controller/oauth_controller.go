@@ -225,13 +225,14 @@ func (controller *OAuthController) oauthCallbackHandler(c *gin.Context) {
 	}
 
 	sessionCookie := repository.Session{
-		Username:    username,
-		Name:        name,
-		Email:       user.Email,
-		Provider:    svc.ID(),
-		OAuthGroups: utils.CoalesceToString(user.Groups),
-		OAuthName:   svc.Name(),
-		OAuthSub:    user.Sub,
+		Username:             username,
+		Name:                 name,
+		Email:                user.Email,
+		Provider:             svc.ID(),
+		OAuthGroups:          utils.CoalesceToString(user.Groups),
+		OAuthName:            svc.Name(),
+		OAuthSub:             user.Sub,
+		BypassDomainsAllowed: user.BypassDomainsAllowed,
 	}
 
 	tlog.App.Trace().Interface("session_cookie", sessionCookie).Msg("Creating session cookie")

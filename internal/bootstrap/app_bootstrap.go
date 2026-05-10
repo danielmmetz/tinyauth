@@ -15,6 +15,7 @@ import (
 	"github.com/steveiliop56/tinyauth/internal/config"
 	"github.com/steveiliop56/tinyauth/internal/controller"
 	"github.com/steveiliop56/tinyauth/internal/repository"
+	"github.com/steveiliop56/tinyauth/internal/service"
 	"github.com/steveiliop56/tinyauth/internal/utils"
 	"github.com/steveiliop56/tinyauth/internal/utils/tlog"
 )
@@ -198,7 +199,7 @@ func (app *BootstrapApp) Setup() error {
 
 	// Start db cleanup routine
 	tlog.App.Debug().Msg("Starting database cleanup routine")
-	go app.dbCleanupRoutine(queries)
+	go app.dbCleanupRoutine(queries, services.ipBypassService)
 
 	// If analytics are not disabled, start heartbeat
 	if app.config.Analytics.Enabled {
@@ -288,7 +289,7 @@ func (app *BootstrapApp) heartbeatRoutine() {
 	}
 }
 
-func (app *BootstrapApp) dbCleanupRoutine(queries *repository.Queries) {
+func (app *BootstrapApp) dbCleanupRoutine(queries *repository.Queries, ipBypass *service.IPBypassService) {
 	ticker := time.NewTicker(time.Duration(30) * time.Minute)
 	defer ticker.Stop()
 	ctx := context.Background()
@@ -298,6 +299,13 @@ func (app *BootstrapApp) dbCleanupRoutine(queries *repository.Queries) {
 		err := queries.DeleteExpiredSessions(ctx, time.Now().Unix())
 		if err != nil {
 			tlog.App.Error().Err(err).Msg("Failed to clean up old database sessions")
+		}
+
+		if ipBypass != nil {
+			tlog.App.Debug().Msg("Cleaning up expired IP bypasses")
+			if err := ipBypass.Cleanup(ctx); err != nil {
+				tlog.App.Error().Err(err).Msg("Failed to cleanup expired IP bypasses")
+			}
 		}
 	}
 }

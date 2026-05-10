@@ -431,7 +431,7 @@ func TestProxyController(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			proxyController := controller.NewProxyController(controllerCfg, group, aclsService, authService)
+			proxyController := controller.NewProxyController(controllerCfg, group, aclsService, authService, nil)
 			proxyController.SetupRoutes()
 
 			test.run(t, router, recorder)

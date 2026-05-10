@@ -102,6 +102,12 @@ func IsRedirectSafe(redirectURL string, domain string) bool {
 
 	hostname := parsed.Hostname()
 
+	// Relative paths (e.g. "/bypasses") cannot redirect off-origin, so they
+	// are always safe.
+	if hostname == "" && strings.HasPrefix(redirectURL, "/") {
+		return true
+	}
+
 	if strings.HasSuffix(hostname, fmt.Sprintf(".%s", domain)) {
 		return true
 	}

@@ -89,8 +89,13 @@ type Config struct {
 	OIDC         OIDCConfig         `description:"OIDC configuration." yaml:"oidc"`
 	UI           UIConfig           `description:"UI customization." yaml:"ui"`
 	Ldap         LdapConfig         `description:"LDAP configuration." yaml:"ldap"`
+	IPBypass     IPBypassConfig     `description:"Dynamic IP bypass configuration." yaml:"ipBypass"`
 	Experimental ExperimentalConfig `description:"Experimental features, use with caution." yaml:"experimental"`
 	Log          LogConfig          `description:"Logging configuration." yaml:"log"`
+}
+
+type IPBypassConfig struct {
+	Enabled bool `description:"Enable user-managed dynamic IP bypass entries from the database." yaml:"enabled"`
 }
 
 type DatabaseConfig struct {
@@ -188,11 +193,12 @@ const DefaultNamePrefix = "TINYAUTH_"
 // OAuth/OIDC config
 
 type Claims struct {
-	Sub               string `json:"sub"`
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	PreferredUsername string `json:"preferred_username"`
-	Groups            any    `json:"groups"`
+	Sub                  string `json:"sub"`
+	Name                 string `json:"name"`
+	Email                string `json:"email"`
+	PreferredUsername    string `json:"preferred_username"`
+	Groups               any    `json:"groups"`
+	BypassDomainsAllowed string `json:"bypass_domains_allowed"`
 }
 
 type OAuthServiceConfig struct {
@@ -241,19 +247,20 @@ type UserSearch struct {
 }
 
 type UserContext struct {
-	Username    string
-	Name        string
-	Email       string
-	IsLoggedIn  bool
-	IsBasicAuth bool
-	OAuth       bool
-	Provider    string
-	TotpPending bool
-	OAuthGroups string
-	TotpEnabled bool
-	OAuthName   string
-	OAuthSub    string
-	LdapGroups  string
+	Username             string
+	Name                 string
+	Email                string
+	IsLoggedIn           bool
+	IsBasicAuth          bool
+	OAuth                bool
+	Provider             string
+	TotpPending          bool
+	OAuthGroups          string
+	TotpEnabled          bool
+	OAuthName            string
+	OAuthSub             string
+	LdapGroups           string
+	BypassDomainsAllowed string
 }
 
 // API responses and queries
